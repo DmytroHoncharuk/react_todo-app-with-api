@@ -218,11 +218,12 @@ console.log(updatingTodos)  }, [updatingTodos]);
       setTodosData(prevTodos =>
         prevTodos.map(t => (t.id === id ? { ...t, title: tempTitle.trim() } : t))
       );
+      setUpdatingTodoId(null);
+
     } catch {
       setError('Update');
     } finally {
       setIsServerRequest(false)
-      setUpdatingTodoId(null);
     }
   };
 
