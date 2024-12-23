@@ -4,7 +4,7 @@
 
 import React, { useEffect, useRef } from 'react';
 import { UserWarning } from './UserWarning';
-import { addTodo, changeTodoCompleted, deleteTodo, USER_ID } from './api/todos';
+import { addTodo, changeTodoCompleted, changeTodoTitle, deleteTodo, USER_ID } from './api/todos';
 import { getTodos } from './api/todos';
 import { Todo } from './types/Todo';
 import classNames from 'classnames';
@@ -23,7 +23,9 @@ export const App: React.FC = () => {
   const [deletingTodo, setDeletingTodo] = React.useState<number | null>(null);
   const [isDeletingCompleted, setIsDeletingCompleted] = React.useState(false);
   const [updatingTodos, setUpdatingTodos] = React.useState<number[]>([]);
-
+  const [updatingTodoId, setUpdatingTodoId] = React.useState<number | null>(null);
+  const [tempTitle, setTempTitle] = React.useState<string>('');
+  const [isServerRequest, setIsServerRequest] = React.useState(false);
 
   if (!USER_ID) {
     return <UserWarning />;
@@ -176,6 +178,31 @@ export const App: React.FC = () => {
     }
   };
 
+  const handleEditTodoTitle = async (id: number) => {
+    const todo = todosData.find(todo => todo.id === id);
+    if (!todo) return;
+
+    if (tempTitle.trim() === '') {
+      await handleDeleteOneTodo(id);
+    } else if (tempTitle.trim() === todo.title) {
+      setUpdatingTodoId(null);
+      return;
+    }
+
+    setIsServerRequest(true)
+      try {
+        await changeTodoTitle({ id, title: tempTitle.trim() });
+        setTodosData(prevTodos =>
+          prevTodos.map(t => (t.id === id ? { ...t, title: tempTitle.trim() } : t))
+        );
+      } catch {
+        setError('Update');
+      } finally {
+      setIsServerRequest(false)
+        setUpdatingTodoId(null);
+      }
+  };
+
 
   return (
     <div className="todoapp">
@@ -207,7 +234,19 @@ export const App: React.FC = () => {
         </header>
 
         <section className="todoapp__main" data-cy="TodoList">
-          <TodoList filteredTodos={filteredTodos} tempTodo={tempTodo} onDelete={handleDeleteOneTodo} deletingTodoId={deletingTodo} updatingTodos={updatingTodos}/>
+          <TodoList
+            filteredTodos={filteredTodos}
+            tempTodo={tempTodo}
+            onDelete={handleDeleteOneTodo}
+            deletingTodoId={deletingTodo}
+            updatingTodos={updatingTodos}
+            setTempTodoTitle={setTempTitle}
+            tempTodoTitle={tempTitle}
+            updatingTodo={updatingTodoId}
+            onDoubleClick={handleEditTodoTitle}
+            setUpdatingTodoId={setUpdatingTodoId}
+            serverRequest={isServerRequest}
+          />
         </section>
         {/*
 

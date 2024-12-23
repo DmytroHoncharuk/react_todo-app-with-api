@@ -7,7 +7,13 @@ type Props = {
   tempTodo: Todo | null;
   onDelete: (id: number) => void;
   deletingTodoId: number | null;
-  updatingTodos: number[]; // Новий пропс
+  updatingTodos: number[];
+  updatingTodo: number | null;
+  tempTodoTitle: string | null;
+  setTempTodoTitle: (newTitle: string) => void;
+  setUpdatingTodoId: (newId: number | null) => void;
+  onDoubleClick: (id: number) => void;
+  serverRequest: boolean;
 };
 
 export const TodoList: React.FC<Props> = ({
@@ -16,6 +22,12 @@ export const TodoList: React.FC<Props> = ({
   onDelete,
   deletingTodoId,
   updatingTodos,
+  updatingTodo,
+  tempTodoTitle,
+  setTempTodoTitle,
+  onDoubleClick,
+  setUpdatingTodoId,
+  serverRequest,
 }) => {
   return (
     <>
@@ -26,6 +38,12 @@ export const TodoList: React.FC<Props> = ({
           onDelete={onDelete}
           isDeleting={deletingTodoId === todo.id}
           isUpdating={updatingTodos.includes(todo.id)}
+          isUpdatingTitle={updatingTodo === todo.id}
+          tempTitle={tempTodoTitle ?? ''}
+          setTempTitle={setTempTodoTitle}
+          onDoubleClick={onDoubleClick}
+          setUpdatingTodoId={setUpdatingTodoId}
+          isServerRequest={updatingTodo === todo.id && serverRequest}
         />
       ))}
 

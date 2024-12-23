@@ -21,3 +21,10 @@ export const changeTodoCompleted = ({
 }: Omit<Todo, 'userId' | 'title'>) => {
   return client.patch(`/todos/${id}`, { completed });
 };
+
+export const changeTodoTitle = ({
+  id,
+  title,
+}: Omit<Todo, 'userId' | 'completed'>) => {
+  return client.patch(`/todos/${id}`, { title });
+};
