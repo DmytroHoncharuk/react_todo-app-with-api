@@ -32,6 +32,9 @@ export const App: React.FC = () => {
   }
 
   useEffect(() => {
+console.log(updatingTodos)  }, [updatingTodos]);
+
+  useEffect(() => {
     inputRef.current?.focus();
   }, []);
 
@@ -114,6 +117,7 @@ export const App: React.FC = () => {
     try {
       await deleteTodo(id);
       setTodosData((prevState)=>prevState.filter((todo) => todo.id !== id));
+
     } catch (err) {
       setError('Delete');
     } finally {
@@ -178,30 +182,51 @@ export const App: React.FC = () => {
     }
   };
 
-  const handleEditTodoTitle = async (id: number) => {
+  const toggleTodo = async (id: number) => {
     const todo = todosData.find(todo => todo.id === id);
     if (!todo) return;
 
+    const updatedTodo = { ...todo, completed: !todo.completed };
+
+    setUpdatingTodos(prev => [...prev, id]);
+
+    try {
+      await changeTodoCompleted({ id, completed: updatedTodo.completed });
+
+      setTodosData(prevTodos =>
+        prevTodos.map(t => (t.id === id ? updatedTodo : t))
+      );
+    } catch {
+      setError('Update');
+    } finally {
+      setUpdatingTodos(prev => prev.filter(todoId => todoId !== id));
+    }
+  };
+
+  const handleEditTodoTitle = async (id: number) => {
+    const todo = todosData.find(todo => todo.id === id);
+    if (!todo) return;
     if (tempTitle.trim() === '') {
       await handleDeleteOneTodo(id);
     } else if (tempTitle.trim() === todo.title) {
       setUpdatingTodoId(null);
       return;
     }
-
     setIsServerRequest(true)
-      try {
-        await changeTodoTitle({ id, title: tempTitle.trim() });
-        setTodosData(prevTodos =>
-          prevTodos.map(t => (t.id === id ? { ...t, title: tempTitle.trim() } : t))
-        );
-      } catch {
-        setError('Update');
-      } finally {
+    try {
+      await changeTodoTitle({ id, title: tempTitle.trim() });
+      setTodosData(prevTodos =>
+        prevTodos.map(t => (t.id === id ? { ...t, title: tempTitle.trim() } : t))
+      );
+    } catch {
+      setError('Update');
+    } finally {
       setIsServerRequest(false)
-        setUpdatingTodoId(null);
-      }
+      setUpdatingTodoId(null);
+    }
   };
+
+
 
 
   return (
@@ -211,12 +236,14 @@ export const App: React.FC = () => {
       <div className="todoapp__content">
         <header className="todoapp__header">
           {/* this button should have `active` class only if all todos are completed */}
-          <button
+          {todosData.length>0 && (<button
             type="button"
-            className={classNames('todoapp__toggle-all', {'active':todosData.filter(todo => todo.completed).length === todosData.length})}
+            className={classNames('todoapp__toggle-all', { 'active': todosData.filter(todo => todo.completed).length === todosData.length })}
             data-cy="ToggleAllButton"
-            onClick={()=>{handleToggleTodos()}}
-          />
+            onClick={() => {
+              handleToggleTodos();
+            }}
+          />)}
 
           {/* Add a todo on form submit */}
           <form onSubmit={handleSubmit}>
@@ -246,6 +273,8 @@ export const App: React.FC = () => {
             onDoubleClick={handleEditTodoTitle}
             setUpdatingTodoId={setUpdatingTodoId}
             serverRequest={isServerRequest}
+            toggleTodo={toggleTodo}
+
           />
         </section>
         {/*

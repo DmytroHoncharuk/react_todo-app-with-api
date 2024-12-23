@@ -12,6 +12,7 @@ type Props = {
   onDoubleClick: (id: number) => void;
   setUpdatingTodoId: (newId: number | null) => void;
   isServerRequest: boolean;
+  toggleTodo: (id: number) => void;
 };
 
 export const TodoItem: React.FC<Props> = ({
@@ -25,6 +26,7 @@ export const TodoItem: React.FC<Props> = ({
   onDoubleClick,
   setUpdatingTodoId,
   isServerRequest,
+  toggleTodo,
 }) => {
   if (!todo) {
     return null;
@@ -51,12 +53,14 @@ export const TodoItem: React.FC<Props> = ({
 
   return (
     <div key={id} data-cy="Todo" className={classNames('todo', { completed })}>
+      {/* eslint-disable-next-line jsx-a11y/label-has-associated-control */}
       <label className="todo__status-label">
         <input
           data-cy="TodoStatus"
           type="checkbox"
           className="todo__status"
           checked={completed}
+          onChange={() => toggleTodo(id)}
           readOnly
         />
       </label>
@@ -105,7 +109,8 @@ export const TodoItem: React.FC<Props> = ({
       <div
         data-cy="TodoLoader"
         className={classNames('modal overlay', {
-          'is-active': isDeleting || isUpdating || isServerRequest,
+          'is-active':
+            isDeleting || isUpdating || (isUpdatingTitle && isServerRequest),
         })}
       >
         <div className="modal-background has-background-white-ter" />

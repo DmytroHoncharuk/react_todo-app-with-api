@@ -1,6 +1,6 @@
-import { TempTodoItem } from '../TempTodoItem/TempTodoItem';
-import { TodoItem } from '../TodoItem/TodoItem';
+import React from 'react';
 import { Todo } from '../../types/Todo';
+import { TodoItem } from '../TodoItem/TodoItem';
 
 type Props = {
   filteredTodos: Todo[];
@@ -8,12 +8,13 @@ type Props = {
   onDelete: (id: number) => void;
   deletingTodoId: number | null;
   updatingTodos: number[];
-  updatingTodo: number | null;
-  tempTodoTitle: string | null;
   setTempTodoTitle: (newTitle: string) => void;
-  setUpdatingTodoId: (newId: number | null) => void;
+  tempTodoTitle: string;
+  updatingTodo: number | null;
   onDoubleClick: (id: number) => void;
+  setUpdatingTodoId: (newId: number | null) => void;
   serverRequest: boolean;
+  toggleTodo: (id: number) => void;
 };
 
 export const TodoList: React.FC<Props> = ({
@@ -22,32 +23,48 @@ export const TodoList: React.FC<Props> = ({
   onDelete,
   deletingTodoId,
   updatingTodos,
-  updatingTodo,
-  tempTodoTitle,
   setTempTodoTitle,
+  tempTodoTitle,
+  updatingTodo,
   onDoubleClick,
   setUpdatingTodoId,
   serverRequest,
+  toggleTodo,
 }) => {
   return (
     <>
       {filteredTodos.map(todo => (
         <TodoItem
-          todo={todo}
           key={todo.id}
+          todo={todo}
           onDelete={onDelete}
           isDeleting={deletingTodoId === todo.id}
           isUpdating={updatingTodos.includes(todo.id)}
           isUpdatingTitle={updatingTodo === todo.id}
-          tempTitle={tempTodoTitle ?? ''}
+          tempTitle={tempTodoTitle}
           setTempTitle={setTempTodoTitle}
           onDoubleClick={onDoubleClick}
           setUpdatingTodoId={setUpdatingTodoId}
-          isServerRequest={updatingTodo === todo.id && serverRequest}
+          isServerRequest={serverRequest}
+          toggleTodo={toggleTodo}
         />
       ))}
 
-      <TempTodoItem tempTodo={tempTodo} />
+      {tempTodo && (
+        <TodoItem
+          todo={tempTodo}
+          onDelete={() => {}}
+          isDeleting={false}
+          isUpdating={false}
+          isUpdatingTitle={false}
+          tempTitle=""
+          setTempTitle={() => {}}
+          onDoubleClick={() => {}}
+          setUpdatingTodoId={() => {}}
+          isServerRequest={false}
+          toggleTodo={() => {}}
+        />
+      )}
     </>
   );
 };
